@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Daily</string>
+    <string name="your_task">Your Task</string>
+    <string name="priority">Priority</string>
+</resources>
