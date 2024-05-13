@@ -18,7 +18,7 @@
         android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/ivUrgency"
+            android:id="@+id/taskPriority"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginEnd="4dp"
@@ -38,7 +38,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvName"
+            android:id="@+id/taskDesc"
             android:layout_width="278dp"
             android:layout_height="34dp"
             android:text="@string/your_task"
@@ -47,7 +47,7 @@
             android:gravity="center"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/ivUrgency"
+            app:layout_constraintEnd_toStartOf="@+id/taskPriority"
             app:layout_constraintStart_toEndOf="@+id/checkBox"
             app:layout_constraintTop_toTopOf="parent">
 
