@@ -10,13 +10,13 @@ import androidx.room.Update
 @Dao
 interface TaskDao {
     @Query("SELECT * FROM tasks")
-    fun getAllTasks(): List<Task>
+    fun getAllTasks(): MutableList<Task>
 
-    @Query("SELECT * FROM tasks WHERE completed = 1")
+    /*@Query("SELECT * FROM tasks WHERE completed = 1")
     fun getCompletedTasks(status: Boolean): List<Task>
 
     @Query("SELECT * FROM tasks WHERE completed = 0")
-    fun getIncompleteTasks(status: Boolean): List<Task>
+    fun getIncompleteTasks(status: Boolean): List<Task>*/
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addTask(task: Task)

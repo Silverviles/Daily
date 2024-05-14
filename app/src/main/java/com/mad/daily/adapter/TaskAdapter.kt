@@ -15,7 +15,7 @@ import com.mad.daily.database.AppDatabase
 import com.mad.daily.database.Task
 
 class TaskAdapter(
-    private val tasks: MutableList<Task> = mutableListOf(),
+    var tasks: MutableList<Task> = mutableListOf(),
     private val layoutId: Int,
     private val mainActivity: MainActivity,
     private val database: AppDatabase
