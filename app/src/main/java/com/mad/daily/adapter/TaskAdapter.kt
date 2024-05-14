@@ -13,7 +13,6 @@ import com.mad.daily.MainActivity
 import com.mad.daily.R
 import com.mad.daily.database.AppDatabase
 import com.mad.daily.database.Task
-import java.io.Serializable
 
 class TaskAdapter(
     private val tasks: MutableList<Task> = mutableListOf(),
@@ -60,7 +59,7 @@ class TaskAdapter(
 
 
     override fun getItemCount(): Int {
-        return 1
+        return tasks.size
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
