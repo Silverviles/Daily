@@ -16,7 +16,7 @@ class AddTask : AppCompatActivity() {
     private lateinit var radioButtons: RadioGroup
     private var task: Task? = null
     private lateinit var editText: EditText
-    private lateinit var intent: Intent
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -29,16 +29,16 @@ class AddTask : AppCompatActivity() {
 
         radioButtons = findViewById(R.id.radioButtons)
         editText = findViewById(R.id.input_description)
-        intent = getIntent()
 
+        val intent = intent
         task = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra("task", Task::class.java)!!
+            intent.getSerializableExtra("task", Task::class.java)
         } else {
-            (intent.getSerializableExtra("task") as? Task)!!
+            intent.getSerializableExtra("task") as? Task
         }
 
-        if (task != null) {
-            editText.setText(task!!.taskDesc)
+        task?.let {
+            editText.setText(it.taskDesc)
         }
     }
 
@@ -52,16 +52,17 @@ class AddTask : AppCompatActivity() {
             task = Task()
         }
 
-        task!!.taskDesc = editText.getText().toString()
+        task!!.taskDesc = editText.text.toString()
         task!!.completed = false
-        val radioButtonId = radioButtons.checkedRadioButtonId
-        when (radioButtonId) {
+        when (radioButtons.checkedRadioButtonId) {
             R.id.important -> task!!.priority = 1
             R.id.average -> task!!.priority = 2
             R.id.unimportant -> task!!.priority = 3
         }
-        intent.putExtra("task", task)
-        setResult(RESULT_OK, intent)
+        val resultIntent = Intent().apply {
+            putExtra("task", task)
+        }
+        setResult(RESULT_OK, resultIntent)
         finish()
     }
 }

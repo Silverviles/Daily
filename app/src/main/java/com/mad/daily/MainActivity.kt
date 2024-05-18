@@ -14,10 +14,7 @@ import com.mad.daily.adapter.TaskAdapter
 import com.mad.daily.database.AppDatabase
 import com.mad.daily.database.Task
 import com.mad.daily.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     private val new: Int = 1
@@ -27,7 +24,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: TaskAdapter
     private lateinit var model: AppDatabase
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val mainScope = CoroutineScope(Dispatchers.Main)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -38,12 +36,22 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         model = AppDatabase.getInstance(applicationContext)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.getRoot())
-
         binding.floatingInsert.setOnClickListener { addTask() }
+
+        recyclerView = findViewById(R.id.taskItems)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        items = mutableListOf()
+        adapter = TaskAdapter(items, R.layout.list_item, this, model)
+        recyclerView.adapter = adapter
+
+        val itemTouchHelper = ItemTouchHelper(RecyclerHelper(adapter))
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+
         fetchTasksAsync()
     }
 
@@ -58,37 +66,42 @@ class MainActivity : AppCompatActivity() {
         if (resultCode == RESULT_OK) {
             val task = data!!.getSerializableExtra("task") as Task?
             if (requestCode == new) {
-                items.add(task!!)
-                model.taskDao().addTask(task)
-                adapter.notifyItemInserted(items.size - 1)
+                task?.let {
+                    items.add(it)
+                    mainScope.launch(Dispatchers.IO) {
+                        model.taskDao().addTask(it)
+                        withContext(Dispatchers.Main) {
+                            adapter.notifyItemInserted(items.size - 1)
+                        }
+                    }
+                }
             } else if (requestCode == edit) {
                 val position = data.getIntExtra("index", -1)
-                items[position] = task!!
-                model.taskDao().updateTask(task)
-                adapter.notifyItemChanged(position)
+                task?.let {
+                    items[position] = it
+                    mainScope.launch(Dispatchers.IO) {
+                        model.taskDao().updateTask(it)
+                        withContext(Dispatchers.Main) {
+                            adapter.notifyItemChanged(position)
+                        }
+                    }
+                }
             }
         }
     }
 
     private fun fetchTasksAsync() {
-        coroutineScope.launch {
+        mainScope.launch {
             val tasks = withContext(Dispatchers.IO) {
                 model.taskDao().getAllTasks()
             }
             updateUI(tasks)
-
-            recyclerView = findViewById(R.id.taskItems)
-            adapter = TaskAdapter(items, R.layout.list_item, MainActivity(), model)
-
-            val itemTouchHelper = ItemTouchHelper(RecyclerHelper(adapter))
-            itemTouchHelper.attachToRecyclerView(recyclerView)
-
-            recyclerView.adapter = adapter
-            recyclerView.layoutManager = LinearLayoutManager(MainActivity())
         }
     }
 
     private fun updateUI(tasks: List<Task>) {
-        adapter.tasks = tasks.toMutableList()
+        items.clear()
+        items.addAll(tasks)
+        adapter.notifyDataSetChanged()
     }
 }
