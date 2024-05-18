@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } else if (requestCode == edit) {
-                val position = data.getIntExtra("index", -1)
+                val position = data.getIntExtra("position", 0)
                 task?.let {
                     items[position] = it
                     mainScope.launch(Dispatchers.IO) {

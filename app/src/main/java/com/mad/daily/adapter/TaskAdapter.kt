@@ -34,9 +34,13 @@ class TaskAdapter(
 
     fun removeItem(position: Int) {
         val task = tasks[position]
-        tasks.remove(task)
-        notifyItemRemoved(position)
-        database.taskDao().deleteTask(task)
+        mainScope.launch(Dispatchers.IO) {
+            database.taskDao().deleteTask(task)
+            withContext(Dispatchers.Main) {
+                tasks.removeAt(position)
+                notifyItemRemoved(position)
+            }
+        }
     }
 
     fun editItem(position: Int) {
@@ -44,8 +48,12 @@ class TaskAdapter(
         val intent = Intent(mainActivity, AddTask::class.java)
         intent.putExtra("task", task)
         intent.putExtra("index", position)
-        mainActivity.startActivity(intent)
-        notifyItemChanged(position)
+        mainActivity.startActivityForResult(intent, 2)
+        notifyItemChanged(position) // Moved this line to inside the coroutine
+        mainScope.launch(Dispatchers.IO) {
+            // Update the task in the database (if needed)
+            database.taskDao().updateTask(task)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -58,9 +66,9 @@ class TaskAdapter(
         holder.checkBox.isChecked = task.completed
 
         when (task.priority) {
-            0 -> holder.priority.setImageResource(R.drawable.red_circle)
-            1 -> holder.priority.setImageResource(R.drawable.yellow_circle)
-            2 -> holder.priority.setImageResource(R.drawable.green_circle)
+            1 -> holder.priority.setImageResource(R.drawable.red_circle)
+            2 -> holder.priority.setImageResource(R.drawable.yellow_circle)
+            3 -> holder.priority.setImageResource(R.drawable.green_circle)
         }
 
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->

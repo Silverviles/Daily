@@ -16,6 +16,7 @@ class AddTask : AppCompatActivity() {
     private lateinit var radioButtons: RadioGroup
     private var task: Task? = null
     private lateinit var editText: EditText
+    private var position: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,9 +37,15 @@ class AddTask : AppCompatActivity() {
         } else {
             intent.getSerializableExtra("task") as? Task
         }
+        position = intent.getIntExtra("index", -1)
 
         task?.let {
             editText.setText(it.taskDesc)
+            when (it.priority) {
+                1 -> radioButtons.check(R.id.important)
+                2 -> radioButtons.check(R.id.average)
+                3 -> radioButtons.check(R.id.unimportant)
+            }
         }
     }
 
@@ -48,8 +55,10 @@ class AddTask : AppCompatActivity() {
     }
 
     fun clicked(view: View) {
+        var operation: Int = 2
         if (task == null) {
             task = Task()
+            operation = 1
         }
 
         task!!.taskDesc = editText.text.toString()
@@ -59,8 +68,10 @@ class AddTask : AppCompatActivity() {
             R.id.average -> task!!.priority = 2
             R.id.unimportant -> task!!.priority = 3
         }
+
         val resultIntent = Intent().apply {
             putExtra("task", task)
+            putExtra("position", position)
         }
         setResult(RESULT_OK, resultIntent)
         finish()
